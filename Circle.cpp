@@ -18,7 +18,7 @@ int main(int argc, char** argv)
 	Mat outputarray;
 
 
-	findCirclesGrid(image, size, outputarray);
+	findCirclesGrid(image, size, outputarray, CALIB_CB_ASYMMETRIC_GRID);
 	drawChessboardCorners(image, size, outputarray, 1);
 	namedWindow("Display window", WINDOW_AUTOSIZE); // Create a window for display.
 	imshow("Display window", image); // Show our image inside it.
