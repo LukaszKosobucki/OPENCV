@@ -32,17 +32,13 @@ int main(int argc, char** argv)
 
 
 	//Wczytywanie zdjęć (rozm przechowuje ich ilosc)
-	for (int i = 0; i < rozm; i++)
-	{
-		system("cls");
-		frame = "img00" + to_string(i + 101) + "_l.bmp";
-		image=imread(frame, IMREAD_GRAYSCALE);
-		cout << "wczytano " << i+1 << endl;
-	}
 	//Algorytm
 	for (int i = 0; i < rozm; i++)
 	{
 		system("cls");
+		frame = "img00" + to_string(i + 101) + "_l.bmp";
+		image = imread(frame, IMREAD_GRAYSCALE);
+		cout << "wczytano " << i + 1 << endl;
 		cout << i + 1 << "/" << rozm << endl;
 		cout << "pomineto " << lost << endl;
 		if (findChessboardCorners(image, size, outputarray))
