@@ -3,6 +3,7 @@
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
+#include <vector>
 
 
 using namespace cv;
@@ -14,9 +15,9 @@ int main(int argc, char** argv)
 {
 	//Zmienne
 	const unsigned int rozm = 800;
-	vector <Mat> image[rozm];
+	Mat image;
 	Size size(10, 7);
-	Mat outputarray;
+	vector <Point2f> outputarray;
 	string frame;
 	vector<Point3f> obj;
 	Mat intrinsic = Mat(3, 3, CV_32FC1);
@@ -35,27 +36,26 @@ int main(int argc, char** argv)
 	{
 		system("cls");
 		frame = "img00" + to_string(i + 101) + "_l.bmp";
-		image[i] = imread(frame, IMREAD_GRAYSCALE);
+		image=imread(frame, IMREAD_GRAYSCALE);
 		cout << "wczytano " << i+1 << endl;
 	}
 	//Algorytm
 	for (int i = 0; i < rozm; i++)
 	{
 		system("cls");
-		frame = "img00" + to_string(i + 101) + "_l.bmp";
-		*image = imread(frame, IMREAD_GRAYSCALE);
 		cout << i + 1 << "/" << rozm << endl;
 		cout << "pomineto " << lost << endl;
-		if (findChessboardCorners(image[i], size, outputarray))
+		if (findChessboardCorners(image, size, outputarray))
 		{
 			image_points.push_back(outputarray);
+			
 			if (i > 0)
 			{
-				if (abs((image_points[i - 1][0].x) - (image_points[i][0].x))> 15.0f || abs((image_points[i-1][0].y - image_points[i][0].y)) > 15.0f || 
+				if (abs((image_points[i - 1][0].x) - (image_points[i][0].x)) > 15.0f || abs((image_points[i-1][0].y - image_points[i][0].y)) > 15.0f || 
 					(sqrt(pow((image_points[i - 1].at(0).x + image_points[i - 1].back().x), 2) + pow((image_points[i - 1].at(0).y + image_points[i - 1].back().y),2)) -
 					sqrt(pow((image_points[i].at(0).x + image_points[i].back().x), 2) + pow((image_points[i].at(0).y + image_points[i].back().y),2)))>15.0f)
 				{
-					cornerSubPix(image[i], outputarray, Size(5, 5), Size(-1, -1), TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 10, 1e-6));
+					cornerSubPix(image, outputarray, Size(5, 5), Size(-1, -1), TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 10, 1e-6));
 					object_points.push_back(obj);
 				}
 				else
@@ -73,9 +73,6 @@ int main(int argc, char** argv)
 		}
 		//drawChessboardCorners(image[i], size, outputarray, 1);
 	}
-	cout <<"1 corner: "<< image_points[0][0].x << endl;
-	cout <<"2 corner: " << image_points.at(1)[1] << endl;
-	cout <<"roznica: "<< image_points.at(0)[0] - image_points.at(1)[1] << endl;
 	//Macierz
 	intrinsic.ptr<float>(0)[0] = 1200;
 	intrinsic.ptr<float>(0)[1] = 0;
@@ -87,14 +84,13 @@ int main(int argc, char** argv)
 	intrinsic.ptr<float>(2)[1] = 0;
 	intrinsic.ptr<float>(2)[2] = 1;
 
-	Mat image2;
 	//Kalibracja i undistorsja
-	cout << calibrateCamera(object_points, image_points, image2.size(), intrinsic, distCoeffs, rvecs, tvecs, 0, TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 5, DBL_EPSILON)) << endl;
-	undistort(image[0], imageUndistorted, intrinsic, distCoeffs);
+	cout << calibrateCamera(object_points, image_points, image.size(), intrinsic, distCoeffs, rvecs, tvecs, 0, TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 5, DBL_EPSILON)) << endl;
+	undistort(image, imageUndistorted, intrinsic, distCoeffs);
 	cout << intrinsic << endl;
 	cout << distCoeffs << endl;
 	//Wyświetlanie
-	imshow("Display window1", image[0]);
+	imshow("Display window1", image);
 	imshow("Display window2", imageUndistorted);
 
 	waitKey(0); // Wait for a keystroke in the window
