@@ -53,8 +53,8 @@ cv2.imwrite('undistorted.jpg', dst)
 import pickle
 with open("ObjPoints.pickle","wb") as file:
     pickle.dump(objpoints,file)
-with open("ImagePoints1.pickle","wb") as file:
+with open("ImagePoints1.pickle","wb") as file: #prawa kamera
     pickle.dump(imgpoints,file)
-with open("ImagePoints2.pickle","wb") as file:
+with open("ImagePoints2.pickle","wb") as file: #lewa kamera
     pickle.dump(imgpoints2,file)
 
