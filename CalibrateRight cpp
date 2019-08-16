@@ -1,4 +1,4 @@
-#include "stdafx.h"
+
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
@@ -13,10 +13,13 @@ using namespace std;
 int main(int argc, char** argv)
 {
 	//Zmienne
-	const unsigned int rozm = 5;
+	const unsigned int rozm = 50;
 	Mat image;
-	Size size(10, 7);
+	int CorHor = 10;
+	int CorVer = 7;
+	Size size(CorHor, CorVer);
 	vector <Point2f> outputarray;
+	vector <Point2f> corners;
 	string frame;
 	vector<Point3f> obj;
 	Mat intrinsic = Mat(3, 3, CV_32FC1);
@@ -27,42 +30,48 @@ int main(int argc, char** argv)
 	vector<vector<Point3f>> object_points;
 	vector<vector<Point2f>> image_points;
 	int lost = 0;
-	for (int j = 0; j<70; j++)		obj.push_back(Point3f(j / 10, j % 10, 0.0f));
+	int licz = 0;
+	for (int j = 0; j < (CorHor*CorVer); j++)		
+		obj.push_back(Point3f(j / 10, j % 10, 0.0f));
 
-
-	/*//Wczytywanie zdjęć (rozm przechowuje ich ilosc)
-	for (int i = 0; i < rozm; i++)
-	{
-		system("cls");
-		frame = "img00" + to_string(i + 101) + "_l.bmp";
-		image = imread(frame, IMREAD_GRAYSCALE);
-		cout << "wczytano " << i + 1 << endl;
-	}*/
 	//Algorytm
+	licz = 1;
+
 	for (int i = 0; i < rozm; i++)
 	{
 		system("cls");
-		frame = "img00" + to_string(i + 101) + "_l.bmp";
+		frame = "img00" + to_string(i + 125) + "_r.bmp";
 		image = imread(frame, IMREAD_GRAYSCALE);
 		cout << i + 1 << "/" << rozm << endl;
 		cout << "pomineto " << lost << endl;
 		if (findChessboardCorners(image, size, outputarray))
 		{
-			image_points.push_back(outputarray);
+			cornerSubPix(image, outputarray, Size(5, 5), Size(-1, -1), TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 30, 1e-6));
+			if (i == 0)
+			{
+				corners = outputarray;
+				image_points.push_back(outputarray);
+				object_points.push_back(obj);
+			}
 			if (i > 0)
 			{
-				if (abs((image_points[i - 1][0].x) - (image_points[i][0].x))> 15.0f || abs((image_points[i - 1][0].y - image_points[i][0].y)) > 15.0f ||
-					(sqrt(pow((image_points[i - 1].at(0).x + image_points[i - 1].back().x), 2) + pow((image_points[i - 1].at(0).y + image_points[i - 1].back().y), 2)) -
-						sqrt(pow((image_points[i].at(0).x + image_points[i].back().x), 2) + pow((image_points[i].at(0).y + image_points[i].back().y), 2)))>15.0f)
-				{
-					cornerSubPix(image, outputarray, Size(5, 5), Size(-1, -1), TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 10, 1e-6));
+				if (abs(sqrt(pow(corners.at(0).x, 2) + pow(corners.at(0).y, 2)) - sqrt(pow(outputarray.at(0).x, 2)+pow(outputarray.at(0).y, 2))) > 15.0f ||
+					abs(sqrt(pow((corners.at(0).x - corners.at(69).x), 2) + pow((corners.at(0).y - corners.at(69).y), 2))-sqrt(pow((outputarray.at(0).x - outputarray.at(69).x), 2) + pow((outputarray.at(0).y - outputarray.at(69).y), 2))) > 10.0f ||
+					abs(sqrt(pow((corners.at(9).x - corners.at(59).x), 2) + pow((corners.at(9).y - corners.at(59).y), 2)) - sqrt(pow((outputarray.at(9).x - outputarray.at(59).x), 2) + pow((outputarray.at(9).y - outputarray.at(59).y), 2))) > 10.0f )
+				{ 
+					image_points.push_back(outputarray);
 					object_points.push_back(obj);
+					corners = outputarray;
+
+					
 				}
 				else
 				{
 					lost++;
 
-				}
+				} 
+			
+				licz++; 
 
 			}
 		}
@@ -71,11 +80,10 @@ int main(int argc, char** argv)
 			lost++;
 
 		}
+
 		//drawChessboardCorners(image[i], size, outputarray, 1);
 	}
-	cout << "1 corner: " << image_points[0][0].x << endl;
-	cout << "2 corner: " << image_points.at(1)[1] << endl;
-	cout << "roznica: " << image_points.at(0)[0] - image_points.at(1)[1] << endl;
+
 	//Macierz
 	intrinsic.ptr<float>(0)[0] = 1200;
 	intrinsic.ptr<float>(0)[1] = 0;
@@ -88,12 +96,11 @@ int main(int argc, char** argv)
 	intrinsic.ptr<float>(2)[2] = 1;
 
 	Mat image2;
+	image2 = imread("img00212_r.bmp", IMREAD_GRAYSCALE);
 
 	//Kalibracja i undistorsja
-	cout << calibrateCamera(object_points, image_points, image2.size(), intrinsic, distCoeffs, rvecs, tvecs, 0, TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 5, DBL_EPSILON)) << endl;
+	cout << calibrateCamera(object_points, image_points, image2.size(), intrinsic, distCoeffs, rvecs, tvecs, 0, TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 30, DBL_EPSILON)) << endl;
 	undistort(image, imageUndistorted, intrinsic, distCoeffs);
-	cout << intrinsic << endl;
-	cout << distCoeffs << endl;
 	//Wyświetlanie
 	imshow("Display window1", image);
 	imshow("Display window2", imageUndistorted);
