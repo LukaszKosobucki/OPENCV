@@ -15,7 +15,7 @@ using namespace std;
 int main(int argc, char** argv)
 {
 	//Zmienne
-	const unsigned int rozm = 100;
+	const unsigned int rozm = 150;
 	Mat image;
 	Mat image_r;
 	int CorHor = 10;
@@ -53,9 +53,8 @@ int main(int argc, char** argv)
 		image_r = imread(frame_r, IMREAD_GRAYSCALE);
 		cout << i + 1 << "/" << rozm << endl;
 		cout << "pomineto " << lost << endl;
-		if (findChessboardCorners(image, size, outputarray))
+		if (findChessboardCorners(image, size, outputarray) && findChessboardCorners(image_r, size, outputarray_r))
 		{
-			findChessboardCorners(image_r, size, outputarray_r);
 			cornerSubPix(image, outputarray, Size(5, 5), Size(-1, -1), TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 30, 1e-6));
 			cornerSubPix(image_r, outputarray_r, Size(5, 5), Size(-1, -1), TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 30, 1e-6));
 			if (i == 0)
