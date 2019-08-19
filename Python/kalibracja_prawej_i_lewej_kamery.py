@@ -35,7 +35,7 @@ for image in fname:
             img2=cv2.imread(f"left\img{k}_l.bmp")
             gray2 = cv2.cvtColor(img2, cv2.COLOR_BGR2GRAY)
             ret2, corners3 = cv2.findChessboardCorners(gray2, (10, 7), None)
-            corners4 = cv2.cornerSubPix(gray, corners, (5, 5), (-1, -1), criteria)
+            corners4 = cv2.cornerSubPix(gray2, corners, (5, 5), (-1, -1), criteria)
             imgpoints2.append(corners4)
             przekatna=np.sqrt((corners2OLD[0][0][0]-corners2OLD[-1][0][0])**2)+np.sqrt((corners2OLD[0][0][1]-corners2OLD[-1][0][1])**2)
             przekatna2=np.sqrt((corners2OLD[9][0][0]-corners2OLD[-10][0][0])**2+(corners2OLD[9][0][1]-corners2OLD[-10][0][1])**2)
