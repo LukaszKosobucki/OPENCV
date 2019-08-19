@@ -1,5 +1,4 @@
 
-
 #include "stdafx.h"
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
@@ -56,6 +55,7 @@ int main(int argc, char** argv)
 			size1 = frame;
 		itn++;
 		system("cls");
+		cout << licz << "/1350";
 		if (findCirclesGrid(frame, size, outputarray, CALIB_CB_ASYMMETRIC_GRID))
 		{
 			//cornerSubPix(frame, outputarray, Size(5, 5), Size(-1, -1), TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 30, 1e-6));
@@ -69,7 +69,7 @@ int main(int argc, char** argv)
 					//image_points_r.push_back(outputarray_r);
 					object_points.push_back(obj);
 					corners = outputarray;
-					drawChessboardCorners(frame, size, outputarray, 1);
+					//drawChessboardCorners(frame, size, outputarray, 1);
 
 
 			//	}
@@ -83,7 +83,7 @@ int main(int argc, char** argv)
 
 		}
 
-		imshow("disp", frame);
+		//imshow("disp", frame);
 
 	
 
@@ -91,11 +91,12 @@ int main(int argc, char** argv)
 		if (c == 27)
 			break;
 
+
 		
 	}
 
 	//Macierz
-	/*intrinsic.ptr<float>(0)[0] = 1.11510032e+03f;
+	intrinsic.ptr<float>(0)[0] = 1.11510032e+03f;
 	intrinsic.ptr<float>(0)[1] = 0.0f;
 	intrinsic.ptr<float>(0)[2] = 5.99616631e+02f;
 	intrinsic.ptr<float>(1)[0] = 0.0f;
@@ -103,7 +104,7 @@ int main(int argc, char** argv)
 	intrinsic.ptr<float>(1)[2] = 5.05226607e+02f;
 	intrinsic.ptr<float>(2)[0] = 0.0f;
 	intrinsic.ptr<float>(2)[1] = 0.0f;
-	intrinsic.ptr<float>(2)[2] = 1.0f;*/
+	intrinsic.ptr<float>(2)[2] = 1.0f;
 
 
 
@@ -124,10 +125,14 @@ int main(int argc, char** argv)
 	}
 	else cout << "Dostep do pliku zostal zabroniony!" << endl;
 
+	cout << "Calibracja w toku..." << endl;
+	
 	plik << calibrateCamera(object_points, image_points, size1.size(), intrinsic, distCoeffs, rvecs, tvecs, 0, TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 30, DBL_EPSILON)) << endl; //lewo
 	plik << distCoeffs << endl;
 	plik << intrinsic << endl;
+	system("cls");
 	//plik << calibrateCamera(object_points, image_points_r, image_r.size(), intrinsic, distCoeffs_r, rvecs, tvecs, 0, TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 30, DBL_EPSILON)) << endl; //prawa
+	
 	
 	Mat R, T, E, F, error;
 
@@ -138,11 +143,11 @@ int main(int argc, char** argv)
 	Mat imageUndistorted_l;
 	Mat imageUndistorted_r;
 
-	/*undistort(image_l, imageUndistorted_l, intrinsic, distCoeffs);
-	undistort(image_r, imageUndistorted_r, intrinsic, distCoeffs_r);
+	//undistort(size1, imageUndistorted, intrinsic, distCoeffs);
+	//undistort(image_r, imageUndistorted_r, intrinsic, distCoeffs_r);
 	//Wyświetlanie
-	imshow("Display windowL", imageUndistorted_l);
-	imshow("Display windowR", imageUndistorted_r);*/
+	//imshow("Display windowL", imageUndistorted);
+	//imshow("Display windowR", imageUndistorted_r);
 	cout << "koniec" << endl;
 	waitKey(0); // Wait for a keystroke in the window
 	return 0;
