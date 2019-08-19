@@ -1,4 +1,5 @@
 
+
 #include "stdafx.h"
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
@@ -94,7 +95,7 @@ int main(int argc, char** argv)
 	}
 
 	//Macierz
-	intrinsic.ptr<float>(0)[0] = 1.11510032e+03f;
+	/*intrinsic.ptr<float>(0)[0] = 1.11510032e+03f;
 	intrinsic.ptr<float>(0)[1] = 0.0f;
 	intrinsic.ptr<float>(0)[2] = 5.99616631e+02f;
 	intrinsic.ptr<float>(1)[0] = 0.0f;
@@ -102,7 +103,9 @@ int main(int argc, char** argv)
 	intrinsic.ptr<float>(1)[2] = 5.05226607e+02f;
 	intrinsic.ptr<float>(2)[0] = 0.0f;
 	intrinsic.ptr<float>(2)[1] = 0.0f;
-	intrinsic.ptr<float>(2)[2] = 1.0f;
+	intrinsic.ptr<float>(2)[2] = 1.0f;*/
+
+
 
 	Mat in = Mat(3, 3, CV_32FC1);
 
@@ -121,7 +124,9 @@ int main(int argc, char** argv)
 	}
 	else cout << "Dostep do pliku zostal zabroniony!" << endl;
 
-	cout << calibrateCamera(object_points, image_points, size1.size(), intrinsic, distCoeffs, rvecs, tvecs, 0, TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 30, DBL_EPSILON)) << endl; //lewo
+	plik << calibrateCamera(object_points, image_points, size1.size(), intrinsic, distCoeffs, rvecs, tvecs, 0, TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 30, DBL_EPSILON)) << endl; //lewo
+	plik << distCoeffs << endl;
+	plik << intrinsic << endl;
 	//plik << calibrateCamera(object_points, image_points_r, image_r.size(), intrinsic, distCoeffs_r, rvecs, tvecs, 0, TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 30, DBL_EPSILON)) << endl; //prawa
 	
 	Mat R, T, E, F, error;
