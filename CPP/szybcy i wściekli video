@@ -1,0 +1,111 @@
+#include "stdafx.h"
+
+#include <opencv2/core/core.hpp>
+#include <opencv2/opencv.hpp>
+#include <opencv2/highgui/highgui.hpp>
+#include <iostream>
+#include <chrono>
+using namespace std;
+using namespace cv;
+
+int main(int argc, char** argv)
+{
+
+	
+
+	//const string videofilename = argv[1];
+
+	
+	VideoCapture video("1.avi");
+
+	if (!video.isOpened()) 
+	{
+		cerr << "Error when reading video file" << endl;
+		exit(1);
+	}
+
+	
+	int FPS = video.get(CAP_PROP_FPS);
+	cout << "FPS: " << FPS << endl;
+
+	int frame_duration = 1000 / FPS;  
+	cout << "frame duration: " << frame_duration << " ms" << endl;
+
+	
+	Mat frame;
+	namedWindow("disp", WINDOW_AUTOSIZE);
+	
+	
+
+	
+	int frame_number = 1;
+	int total_grab_frame_time = 0;
+	int total_retrieve_frame_time = 0;
+	int total_imshow_time = 0;
+	int total_remaining_time_to_wait = 0;
+	
+
+	while (true)
+	{
+		
+		auto start_time = chrono::high_resolution_clock::now();
+
+
+
+		
+		video.grab();
+		auto end_time = chrono::high_resolution_clock::now();
+		int grab_frame_time = chrono::duration_cast<chrono::milliseconds>(end_time - start_time).count();
+		total_grab_frame_time += grab_frame_time;
+		cout << "grab " << grab_frame_time << " (" << total_grab_frame_time / frame_number << ")";
+
+		
+		start_time = chrono::high_resolution_clock::now();
+
+		video.retrieve(frame);
+		if (frame.empty())
+			break;
+
+		end_time = chrono::high_resolution_clock::now();
+		int retrieve_frame_time = chrono::duration_cast<chrono::milliseconds>(end_time - start_time).count();
+		total_retrieve_frame_time += retrieve_frame_time;
+		cout << "  retrieve " << retrieve_frame_time << " (" << total_retrieve_frame_time / frame_number << ")";
+
+		
+		start_time = chrono::high_resolution_clock::now();
+		imshow("disp", frame);
+
+		
+		
+
+		end_time = chrono::high_resolution_clock::now();
+		int imshow_time = chrono::duration_cast<chrono::milliseconds>(end_time - start_time).count();
+		total_imshow_time += imshow_time;
+		cout << "  imshow " << imshow_time << " (" << total_imshow_time / frame_number << ")";
+
+		
+		int remaining_time_to_wait = frame_duration - (grab_frame_time + retrieve_frame_time + imshow_time);
+		if (remaining_time_to_wait >= 0)
+			cout << "  ahead " << remaining_time_to_wait;
+		else
+			cout << "  behind " << -remaining_time_to_wait;
+
+		total_remaining_time_to_wait += remaining_time_to_wait;
+		if (total_remaining_time_to_wait >= 0)
+			cout << "  (mean: ahead of schedule by " << total_remaining_time_to_wait / frame_number << "ms)" << endl;
+		else
+			cout << "  (mean: behind of schedule by " << -total_remaining_time_to_wait / frame_number << "ms)" << endl;
+
+
+		remaining_time_to_wait = max(1, remaining_time_to_wait);
+
+		char key = waitKey(remaining_time_to_wait); 
+		if (key == 'q')
+			break;
+
+		frame_number++;  
+
+	}
+
+	return 0;
+}
