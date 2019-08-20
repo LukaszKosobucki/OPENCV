@@ -1,8 +1,11 @@
-
+#include "stdafx.h"
+#pragma comment(linker, "/STACK:10000000")
+#pragma comment(linker, "/HEAP:10000000")
 #include <opencv2/opencv.hpp>
 #include <opencv2/core/core.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
+#include <fstream>
 
 
 using namespace cv;
@@ -13,7 +16,7 @@ using namespace std;
 int main(int argc, char** argv)
 {
 	//Zmienne
-	const unsigned int rozm = 50;
+	const unsigned int rozm = 150;
 	Mat image;
 	int CorHor = 10;
 	int CorVer = 7;
@@ -31,7 +34,7 @@ int main(int argc, char** argv)
 	vector<vector<Point2f>> image_points;
 	int lost = 0;
 	int licz = 0;
-	for (int j = 0; j < (CorHor*CorVer); j++)		
+	for (int j = 0; j < (CorHor*CorVer); j++)
 		obj.push_back(Point3f(j / 10, j % 10, 0.0f));
 
 	//Algorytm
@@ -55,23 +58,23 @@ int main(int argc, char** argv)
 			}
 			if (i > 0)
 			{
-				if (abs(sqrt(pow(corners.at(0).x, 2) + pow(corners.at(0).y, 2)) - sqrt(pow(outputarray.at(0).x, 2)+pow(outputarray.at(0).y, 2))) > 15.0f ||
-					abs(sqrt(pow((corners.at(0).x - corners.at(69).x), 2) + pow((corners.at(0).y - corners.at(69).y), 2))-sqrt(pow((outputarray.at(0).x - outputarray.at(69).x), 2) + pow((outputarray.at(0).y - outputarray.at(69).y), 2))) > 10.0f ||
-					abs(sqrt(pow((corners.at(9).x - corners.at(59).x), 2) + pow((corners.at(9).y - corners.at(59).y), 2)) - sqrt(pow((outputarray.at(9).x - outputarray.at(59).x), 2) + pow((outputarray.at(9).y - outputarray.at(59).y), 2))) > 10.0f )
-				{ 
+				if (abs(sqrt(pow(corners.at(0).x, 2) + pow(corners.at(0).y, 2)) - sqrt(pow(outputarray.at(0).x, 2) + pow(outputarray.at(0).y, 2))) > 15.0f ||
+					abs(sqrt(pow((corners.at(0).x - corners.at(69).x), 2) + pow((corners.at(0).y - corners.at(69).y), 2)) - sqrt(pow((outputarray.at(0).x - outputarray.at(69).x), 2) + pow((outputarray.at(0).y - outputarray.at(69).y), 2))) > 10.0f ||
+					abs(sqrt(pow((corners.at(9).x - corners.at(59).x), 2) + pow((corners.at(9).y - corners.at(59).y), 2)) - sqrt(pow((outputarray.at(9).x - outputarray.at(59).x), 2) + pow((outputarray.at(9).y - outputarray.at(59).y), 2))) > 10.0f)
+				{
 					image_points.push_back(outputarray);
 					object_points.push_back(obj);
 					corners = outputarray;
 
-					
+
 				}
 				else
 				{
 					lost++;
 
-				} 
-			
-				licz++; 
+				}
+
+				licz++;
 
 			}
 		}
@@ -85,25 +88,36 @@ int main(int argc, char** argv)
 	}
 
 	//Macierz
-	intrinsic.ptr<float>(0)[0] = 1200;
-	intrinsic.ptr<float>(0)[1] = 0;
-	intrinsic.ptr<float>(0)[2] = (float)1279 / (float)2;
-	intrinsic.ptr<float>(1)[0] = 0;
-	intrinsic.ptr<float>(1)[1] = 1280;
-	intrinsic.ptr<float>(1)[2] = (float)1023 / (float)2;
-	intrinsic.ptr<float>(2)[0] = 0;
-	intrinsic.ptr<float>(2)[1] = 0;
-	intrinsic.ptr<float>(2)[2] = 1;
+	intrinsic.ptr<float>(0)[0] = 1.11510032e+03f;
+	intrinsic.ptr<float>(0)[1] = 0.0f;
+	intrinsic.ptr<float>(0)[2] = 5.99616631e+02f;
+	intrinsic.ptr<float>(1)[0] = 0.0f;
+	intrinsic.ptr<float>(1)[1] = 1.14168758e+03f;
+	intrinsic.ptr<float>(1)[2] = 5.05226607e+02f;
+	intrinsic.ptr<float>(2)[0] = 0.0f;
+	intrinsic.ptr<float>(2)[1] = 0.0f;
+	intrinsic.ptr<float>(2)[2] = 1.0f;
+	fstream plik;
+	plik.open("logs.txt", ios::in | ios::out);
+	if (plik.good() == true)
+	{
+		cout << "Uzyskano dostep do pliku!" << std::endl;
+		//tu operacje na pliku
+	}
+	else cout << "Dostep do pliku zostal zabroniony!" << endl;
 
 	Mat image2;
 	image2 = imread("img00212_r.bmp", IMREAD_GRAYSCALE);
 
 	//Kalibracja i undistorsja
-	cout << calibrateCamera(object_points, image_points, image2.size(), intrinsic, distCoeffs, rvecs, tvecs, 0, TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 30, DBL_EPSILON)) << endl;
+	plik<< calibrateCamera(object_points, image_points, image2.size(), intrinsic, distCoeffs, rvecs, tvecs, 0, TermCriteria(TermCriteria::COUNT + TermCriteria::EPS, 100, DBL_EPSILON)) << endl;
+	
 	undistort(image, imageUndistorted, intrinsic, distCoeffs);
+	plik << distCoeffs << endl;
+	plik << intrinsic << endl;
 	//Wyświetlanie
-	imshow("Display window1", image);
-	imshow("Display window2", imageUndistorted);
+//	imshow("Display window1", image);
+	//imshow("Display window2", imageUndistorted);
 
 	waitKey(0); // Wait for a keystroke in the window
 	return 0;
