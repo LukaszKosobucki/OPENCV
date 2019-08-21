@@ -24,9 +24,9 @@ int main(int argc, char** argv)
 	int circleG = 252;
 	int circleB = 0;
 	namedWindow("Trackbar", WINDOW_FULLSCREEN);
-	createTrackbar("Lower R", "Trackbar",&lowerR,255,NULL);
-	createTrackbar("Lower G", "Trackbar",&lowerG, 255, NULL);
-	createTrackbar("Lower B", "Trackbar",&lowerB, 255, NULL);
+	createTrackbar("Lower R", "Trackbar", &lowerR, 255, NULL);
+	createTrackbar("Lower G", "Trackbar", &lowerG, 255, NULL);
+	createTrackbar("Lower B", "Trackbar", &lowerB, 255, NULL);
 	createTrackbar("Upper R", "Trackbar", &upperR, 255, NULL);
 	createTrackbar("Upper G", "Trackbar", &upperG, 255, NULL);
 	createTrackbar("Upper B", "Trackbar", &upperB, 255, NULL);
@@ -34,11 +34,10 @@ int main(int argc, char** argv)
 	Mat hsv;
 	Mat drone;
 	VideoCapture video("drone.mp4");
-	VideoCapture video2("drone.mp4");
 	video.set(CAP_PROP_FPS, 60.0f);
 	Mat lower_orange(217.0f, 97.0f, 54.0f);
 	Mat upper_orange(255.05f, 103.0f, 38.0f);
-	Mat mask, bgmask;
+	Mat mask;
 	Mat erodeElement = getStructuringElement(MORPH_RECT, Size(3, 3));
 	Mat dilateElement = getStructuringElement(MORPH_RECT, Size(8, 8));
 	vector< vector<Point> > contours;
@@ -53,12 +52,12 @@ int main(int argc, char** argv)
 		if (frame.empty())
 			break;
 		cvtColor(frame, hsv, COLOR_RGB2HSV);
-		inRange(hsv,Scalar(lowerB,lowerG,lowerR), Scalar (upperB, upperG, upperR),mask);
+		inRange(hsv, Scalar(lowerB, lowerG, lowerR), Scalar(upperB, upperG, upperR), mask);
 		erode(mask, mask, erodeElement);
 		erode(mask, mask, erodeElement);
 		dilate(mask, mask, dilateElement);
 		dilate(mask, mask, dilateElement);
-		
+
 		findContours(mask, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_SIMPLE);
 		bitwise_and(frame, frame, drone, mask);
 		if (contours.empty())
@@ -67,9 +66,10 @@ int main(int argc, char** argv)
 		}
 		else
 		{
-			
-			circle(frame, Point(contours[0][0].x+5, contours[0][0].y+5), 7, Scalar(circleR, circleG, circleB ),2);
-			//rectangle(frame, Point(contours[0][0].x, contours[0][0].y), Point(contours[0][0].x+15, contours[0][0].y+15), Scalar(150, 100, 50), 2);
+
+			circle(frame, Point(contours[0][0].x + 5, contours[0][0].y + 5), 7, Scalar(circleR, circleG, circleB), 2);
+			rectangle(frame, Point(contours[0][0].x-120, contours[0][0].y-40), Point(contours[0][0].x+40, contours[0][0].y+25), Scalar(150, 100, 50), 2);
+			putText(frame, "DRONIK", Point(contours[0][0].x - 90, contours[0][0].y - 50),1,2,Scalar(150, 100, 50),2);
 		}
 		//imshow("drone", drone);
 		//imshow("disp2", hsv);
@@ -80,11 +80,12 @@ int main(int argc, char** argv)
 		char c = char(waitKey(1));
 		if (c == 27)
 			break;
-		
+
+
 
 
 	}
-	
+
 	waitKey(1); // Wait for a keystroke in the window
 	return 0;
 }
