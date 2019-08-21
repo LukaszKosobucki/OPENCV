@@ -3,71 +3,55 @@
 import numpy as np
 import argparse
 import cv2
-
+import imutils
 
 def nothing(x):
     pass
 
 # Create a black image, a window
 img = np.zeros((300,512,3), np.uint8)
-cv2.namedWindow('image')
-cv2.createTrackbar('Rl','image',0,255,nothing)
-cv2.createTrackbar('Gl','image',0,255,nothing)
-cv2.createTrackbar('Bl','image',0,255,nothing)
-cv2.createTrackbar('Ru','image',0,255,nothing)
-cv2.createTrackbar('Gu','image',0,255,nothing)
-cv2.createTrackbar('Bu','image',0,255,nothing)
-
 # create switch for ON/OFF functionality
-switch = '0 : OFF \n1 : ON'
-cv2.createTrackbar(switch, 'image',0,1,nothing)
 
 image = cv2.VideoCapture("C0520.MP4")
 xOLD=900
 yOLD=870
+THICKNESS = 3
+
+FIRST = 0
+RED = (0, 0, 255)
 while True:
     cv2.imshow('image', img)
     k = cv2.waitKey(1) & 0xFF
     if k == 27:
         break
-    # get current positions of four trackbars
-    rl = cv2.getTrackbarPos('Rl', 'image')
-    gl = cv2.getTrackbarPos('Gl', 'image')
-    bl = cv2.getTrackbarPos('Bl', 'image')
-    ru = cv2.getTrackbarPos('Ru', 'image')
-    gu = cv2.getTrackbarPos('Gu', 'image')
-    bu = cv2.getTrackbarPos('Bu', 'image')
-    s = cv2.getTrackbarPos(switch, 'image')
-
-    if s == 0:
-        img[:] = 0
-    else:
-        img[:] = [bu, gu, ru]
-
-
 
     ret, frame=image.read()
-    cv2.namedWindow("kolorki",0)
-    cv2.resizeWindow("kolorki",3000,1000)
     color=cv2.cvtColor(frame,cv2.COLOR_RGB2HSV)
-    mask=cv2.inRange(color,np.array([bl,gl,rl]),np.array([bu,gu,ru]))
+    mask=cv2.inRange(color,np.array([93,86,192]),np.array([255,255,255]))
+    mask2 =cv2.erode(mask,kernel=None,iterations=2)
+    mask3 = cv2.dilate(mask2,kernel=None,dst=None,iterations=8)
+    output=cv2.bitwise_and(frame,frame,mask=mask3)
 
-    # mask2=cv2.erode(mask,mask,iterations=3)
-    # cv2.dilate(mask2,kernel=None,dst=mask,iterations=3)
+    kupa1,kupa2=cv2.findContours(mask3, mode=cv2.RETR_CCOMP,method= cv2.CHAIN_APPROX_SIMPLE)
 
-    # output=cv2.bitwise_and(frame,frame,mask=mask)
-    # kupa1,kupa2=cv2.findContours(mask, mode=cv2.RETR_CCOMP,method= cv2.CHAIN_APPROX_SIMPLE)
-    # try:
-    #     if np.absolute(xOLD-kupa1[0][0][0][0])<100 and np.absolute(yOLD-kupa1[0][0][0][1])<100:
-    #         cv2.rectangle(frame,(kupa1[0][0][0][0]-80,kupa1[0][0][0][1]-60),(kupa1[0][0][0][0]+50,kupa1[0][0][0][1]+20),(0,0,0),5)
-    #         xOLD=kupa1[0][0][0][0]
-    #         yOLD=kupa1[0][0][0][1]
-    # except:
-    #     print("nic")
+    try:
+        contour_sizes = [(cv2.contourArea(contour), contour) for contour in kupa1]
+        biggest_contour = max(contour_sizes, key=lambda x: x[0])[1]
+        epsilon = 0.1 * cv2.arcLength(biggest_contour, True)
+        approx = cv2.approxPolyDP(biggest_contour, epsilon, True)
+        x, y, w, h = cv2.boundingRect(approx)
+        rect = cv2.minAreaRect(approx)
+        box = cv2.boxPoints(rect)
+        box = np.int0(box)
+
+        for i in range(len(kupa1)):
+            cv2.drawContours(frame, [box], 0, (0, 0, 255), 2)
+        #cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+        #cv2.drawContours(frame, [approx], FIRST, RED, THICKNESS)
+    except:
+        print('Nie wykryto piłeczek')
+
     if cv2.waitKey(5) & 0xFF ==ord('q'):
         break
-    cv2.imshow("kozak",mask)
-    # cv2.imshow("kolorki",np.hstack([frame,mask]))
-
-# # define the list of boundaries
-print(f"rl:{rl} gl:{gl} bl:{bl} ru:{ru} gu:{gu} bu:{bu}")
+    #cv2.imshow("kozak",mask3)
+    cv2.imshow("kolorki",np.hstack([frame,output]))
