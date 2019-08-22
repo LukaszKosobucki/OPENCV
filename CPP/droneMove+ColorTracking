@@ -24,7 +24,7 @@ void searchForMovement(Mat thresholdImage, Mat &cameraFeed) {
 	bool objectDetected = false;
 	Mat temp;
 	Mat hsv, mask;
-	int lowerR = 169;
+	int lowerR = 150;
 	int lowerG = 86;
 	int lowerB = 93;
 	int upperR = 255;
@@ -45,6 +45,12 @@ void searchForMovement(Mat thresholdImage, Mat &cameraFeed) {
 	dilate(mask, mask, dilateElement);
 
 	findContours(mask, contours, hierarchy, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+	if (contours.empty());
+	else {
+
+		circle(cameraFeed, Point(contours[0][0].x+10, contours[0][0].y+10), 5, Scalar(0, 255, 0), 2);
+		imshow("disp1", mask);
+	}
 	if (contours.size() > 0)objectDetected = true;
 	else objectDetected = false;
 
@@ -60,7 +66,9 @@ void searchForMovement(Mat thresholdImage, Mat &cameraFeed) {
 	int x = theObject[0];
 	int y = theObject[1];
 
-	circle(cameraFeed, Point(x, y), 7, Scalar(0, 255, 0), 2);
+
+
+	circle(cameraFeed, Point(x, y), 5, Scalar(0, 255, 0), 2);
 /*	line(cameraFeed, Point(x, y), Point(x, y - 25), Scalar(0, 255, 0), 2);
 	line(cameraFeed, Point(x, y), Point(x, y + 25), Scalar(0, 255, 0), 2);
 	line(cameraFeed, Point(x, y), Point(x - 25, y), Scalar(0, 255, 0), 2);
