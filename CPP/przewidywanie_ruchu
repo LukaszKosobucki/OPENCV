@@ -16,7 +16,7 @@ int main(int argc, char** argv)
 	int lowerR = 169;
 	int lowerG = 86;
 	int lowerB = 93;
-	int upperR = 255;
+	int upperR = 237;
 	int upperG = 255;
 	int upperB = 255;
 
@@ -47,7 +47,8 @@ int main(int argc, char** argv)
 	vector<Vec4i> hierarchy;
 	bool objectFound = false;
 	int iter = 0;
-
+	int max = 0, i_cont = -1;
+	vector<Point> contours_poly;
 
 	while (1)
 	{
@@ -60,23 +61,39 @@ int main(int argc, char** argv)
 					break;
 				cvtColor(frame, hsv, COLOR_RGB2HSV);
 				inRange(hsv, Scalar(lowerB, lowerG, lowerR), Scalar(upperB, upperG, upperR), mask);
-				erode(mask, mask, erodeElement);
-				erode(mask, mask, erodeElement);
+				erode(mask, mask, erodeElement, Point(-1, -1), 2);
 				dilate(mask, mask, dilateElement);
 				dilate(mask, mask, dilateElement);
 
-				findContours(mask, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_SIMPLE);
-				bitwise_and(frame, frame, drone, mask);
+				findContours(mask, contours, RETR_EXTERNAL, CHAIN_APPROX_SIMPLE);
+				//bitwise_and(frame, frame, drone, mask);
 				if (contours.empty())
 				{
 					;
 				}
 				else
 				{
-					
-					temp->push_back(contours[0][0]);
-					circle(frame, Point(contours[0][0].x + 5, contours[0][0].y + 5), 7, Scalar(circleR, circleG, circleB), 2);
-					rectangle(frame, Point(contours[0][0].x - 120, contours[0][0].y - 40), Point(contours[0][0].x + 40, contours[0][0].y + 25), Scalar(255, 255, 255), 2);
+					switch (contours.size())
+					{
+					case 1:
+						temp->push_back(contours[0][0]);
+						circle(frame, Point(contours[0][0].x + 5, contours[0][0].y + 5), 5, Scalar(circleR, circleG, circleB), 2);
+						rectangle(frame, Point(contours[0][0].x - 100, contours[0][0].y - 40), Point(contours[0][0].x + 60, contours[0][0].y + 45), Scalar(255, 255, 255), 2);
+						break;
+					case 2:
+						temp->push_back(contours[0][0]);
+						circle(frame, Point(contours[0][0].x + 7, contours[0][0].y + 7), 5, Scalar(circleR, circleG, circleB), 2);
+						circle(frame, Point(contours[1][0].x + 7, contours[1][0].y + 7), 5, Scalar(circleR, circleG, circleB), 2);
+						rectangle(frame, Point(contours[0][0].x - 90, contours[0][0].y - 35), Point(contours[0][0].x + 70, contours[0][0].y + 55), Scalar(255, 255, 255), 2);
+						break;
+					default:
+						break;
+					}
+						
+
+
+
+
 					//putText(frame, "DRONIK", Point(contours[0][0].x - 90, contours[0][0].y - 50), 1, 2, Scalar(150, 100, 50), 2);
 				}
 			}
@@ -87,18 +104,18 @@ int main(int argc, char** argv)
 				cout << obliczone.x - temp->back().x << endl;
 				cout << "blad y:";
 				cout << obliczone.y - temp->back().y << endl << endl;
-				v.x = temp->back().x + (temp->back().x - temp->at(temp->size()-2).x);
-				v.y = temp->back().y + (temp->back().y - temp->at(temp->size()-2).y);
+				v.x = temp->back().x + (temp->back().x - temp->at(temp->size() - 2).x);
+				v.y = temp->back().y + (temp->back().y - temp->at(temp->size() - 2).y);
 				obliczone.x = v.x;
 				obliczone.y = v.y;
-				
-				circle(frame, Point(v.x + 5, v.y + 5), 7, Scalar(circleR, circleG, circleB), 2);
-				rectangle(frame, Point(v.x - 120, v.y - 40), Point(v.x + 40, v.y + 25), Scalar(0, 0, 0), 2);
-				putText(frame, "ESTIMATED", Point(v.x - 120, v.y - 50), 1, 2, Scalar(200, 50, 100), 2);
+
+				//circle(frame, Point(v.x + 5, v.y + 5), 7, Scalar(circleR, circleG, circleB), 2);
+				rectangle(frame, Point(v.x - 90, v.y - 35), Point(v.x + 70, v.y + 55), Scalar(0, 0, 0), 2);
+				putText(frame, "PREDICTION", Point(v.x - 100, v.y - 50), 1, 2, Scalar(200, 50, 100), 2);
 			}
 			//imshow("drone", drone);
 			//imshow("disp2", hsv);
-			imshow("disp3", mask);
+			//imshow("disp3", mask);
 			imshow("disp", frame);
 			contours.clear();
 			iter++;
@@ -106,7 +123,7 @@ int main(int argc, char** argv)
 			if (c == 27)
 				break;
 		}
-		
+
 
 
 
@@ -116,3 +133,6 @@ int main(int argc, char** argv)
 	waitKey(1); // Wait for a keystroke in the window
 	return 0;
 }
+
+
+
