@@ -20,16 +20,12 @@ string intToString(int number) {
 	return ss.str();
 }
 
-void searchForMovement(Mat thresholdImage, Mat &cameraFeed) {
+Mat searchForOrangeMovement(Mat thresholdImage, Mat &cameraFeed, int lowerR, int lowerG, int lowerB, int upperR, int upperG, int upperB) {
 	bool objectDetected = false;
 	Mat temp;
 	Mat hsv, mask;
-	int lowerR = 150;
-	int lowerG = 86;
-	int lowerB = 93;
-	int upperR = 255;
-	int upperG = 255;
-	int upperB = 255;
+	int x, y;
+	
 	
 	Mat erodeElement = getStructuringElement(MORPH_RECT, Size(3, 3));
 	Mat dilateElement = getStructuringElement(MORPH_RECT, Size(8, 8));
@@ -48,32 +44,64 @@ void searchForMovement(Mat thresholdImage, Mat &cameraFeed) {
 	if (contours.empty());
 	else {
 
-		circle(cameraFeed, Point(contours[0][0].x+10, contours[0][0].y+10), 5, Scalar(0, 255, 0), 2);
-		imshow("disp1", mask);
+		switch (contours.size())
+		{
+			case 2:
+					if (contours.size() > 0)objectDetected = true;
+					else objectDetected = false;
+
+					if (objectDetected)
+					{
+						vector<vector<Point>> largestContourVec;
+						largestContourVec.push_back(contours.at(contours.size() - 2));
+						objectBoundingRectangle = boundingRect(largestContourVec.at(0));
+						int xpos = objectBoundingRectangle.x + objectBoundingRectangle.width / 2;
+						int ypos = objectBoundingRectangle.y + objectBoundingRectangle.height / 2;
+						theObject[0] = xpos, theObject[1] = ypos;
+					}
+					 x = theObject[0];
+					 y = theObject[1];
+
+					circle(cameraFeed, Point(x, y), 5, Scalar(0, 255, 0), 2);
+
+					if (contours.size() > 0)objectDetected = true;
+					else objectDetected = false;
+
+					if (objectDetected)
+					{
+						vector<vector<Point>> largestContourVec;
+						largestContourVec.push_back(contours.at(contours.size() - 1));
+						objectBoundingRectangle = boundingRect(largestContourVec.at(0));
+						int xpos = objectBoundingRectangle.x + objectBoundingRectangle.width / 2;
+						int ypos = objectBoundingRectangle.y + objectBoundingRectangle.height / 2;
+					theObject[0] = xpos, theObject[1] = ypos;
+					}
+					 x = theObject[0];
+					 y = theObject[1];
+
+					circle(cameraFeed, Point(x, y), 5, Scalar(0, 255, 0), 2);
+				
+			case 1:
+					if (contours.size() > 0)objectDetected = true;
+					else objectDetected = false;
+
+					if (objectDetected)
+					{
+						vector<vector<Point>> largestContourVec;
+						largestContourVec.push_back(contours.at(contours.size() - 1));
+						objectBoundingRectangle = boundingRect(largestContourVec.at(0));
+						int xpos = objectBoundingRectangle.x + objectBoundingRectangle.width / 2;
+						int ypos = objectBoundingRectangle.y + objectBoundingRectangle.height / 2;
+						theObject[0] = xpos, theObject[1] = ypos;
+					}
+					 x = theObject[0];
+					 y = theObject[1];
+
+					circle(cameraFeed, Point(x, y), 5, Scalar(0, 255, 0), 2);
+		}
+		contours.clear();
 	}
-	if (contours.size() > 0)objectDetected = true;
-	else objectDetected = false;
-
-	if (objectDetected)
-	{
-		vector<vector<Point>> largestContourVec;
-		largestContourVec.push_back(contours.at(contours.size() - 1));
-		objectBoundingRectangle = boundingRect(largestContourVec.at(0));
-		int xpos = objectBoundingRectangle.x + objectBoundingRectangle.width / 2;
-		int ypos = objectBoundingRectangle.y + objectBoundingRectangle.height / 2;
-		theObject[0] = xpos, theObject[1] = ypos;
-	}
-	int x = theObject[0];
-	int y = theObject[1];
-
-
-
-	circle(cameraFeed, Point(x, y), 5, Scalar(0, 255, 0), 2);
-/*	line(cameraFeed, Point(x, y), Point(x, y - 25), Scalar(0, 255, 0), 2);
-	line(cameraFeed, Point(x, y), Point(x, y + 25), Scalar(0, 255, 0), 2);
-	line(cameraFeed, Point(x, y), Point(x - 25, y), Scalar(0, 255, 0), 2);
-	line(cameraFeed, Point(x, y), Point(x + 25, y), Scalar(0, 255, 0), 2);
-	putText(cameraFeed, "Sledze obiekt na (" + intToString(x) + "," + intToString(y) + ")", Point(x, y), 1, 1, Scalar(255, 0, 0), 2);*/
+	return mask;
 }
 
 
@@ -87,7 +115,22 @@ int main()
 	Mat grayImage1, grayImage2;
 	Mat differenceImage;
 	Mat thresholdImage;
+	Mat mask;
+	int lowerR = 150;
+	int lowerG = 86;
+	int lowerB = 93;
+	int upperR = 255;
+	int upperG = 255;
+	int upperB = 255;
 	VideoCapture capture;
+
+	namedWindow("Trackbar", WINDOW_FULLSCREEN);
+	createTrackbar("Lower R", "Trackbar", &lowerR, 255, NULL);
+	createTrackbar("Lower G", "Trackbar", &lowerG, 255, NULL);
+	createTrackbar("Lower B", "Trackbar", &lowerB, 255, NULL);
+	createTrackbar("Upper R", "Trackbar", &upperR, 255, NULL);
+	createTrackbar("Upper G", "Trackbar", &upperG, 255, NULL);
+	createTrackbar("Upper B", "Trackbar", &upperB, 255, NULL);
 
 	while (1)
 	{
@@ -133,7 +176,11 @@ int main()
 			}
 			if (trackingEnabled)
 			{
-				searchForMovement(thresholdImage, frame1);
+				mask = searchForOrangeMovement(thresholdImage, frame1,  lowerR,  lowerG,  lowerB,  upperR,  upperG, upperB);
+				imshow("mask", mask);
+			}
+			else {
+				destroyWindow("mask");
 			}
 
 			imshow("Frame", frame1);
