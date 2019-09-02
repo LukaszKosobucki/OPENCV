@@ -149,8 +149,8 @@ punkty=[[np.array([[1481.96292089],
        [1135.91534824]])]]
 for i in range(len(punkty)):
     xs=punkty[i][0][0]
-    ys=punkty[i][1][0]
-    zs=punkty[i][2][0]
+    ys=punkty[i][0][1]
+    zs=punkty[i][0][2]
     ax.scatter(xs, ys, zs)
 
 ax.set_xlabel('X Label')
