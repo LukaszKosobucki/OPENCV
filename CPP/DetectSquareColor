@@ -41,7 +41,9 @@ int main(int argc, char** argv)
 	Mat erodeElement = getStructuringElement(MORPH_RECT, Size(3, 3));
 	Mat dilateElement = getStructuringElement(MORPH_RECT, Size(8, 8));
 	vector< vector<Point> > contours;
-	vector< vector<Point> > contours_temp;
+	vector< vector<Point> > temp;
+	vector< vector<Point> > temp_contours;
+	int temp_x, temp_y;
 	vector<Vec4i> hierarchy;
 	Mat croppedImage;
 	Rect objectBoundingRectangle = Rect(0, 0, 0, 0);
@@ -64,11 +66,16 @@ int main(int argc, char** argv)
 			dilate(mask, mask, dilateElement);
 
 			findContours(mask, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_SIMPLE);
-				bitwise_and(frame, frame, drone, mask);
-				if (contours.empty());
-				else {
-					croppedImage = frame(Rect(contours.at(0).at(0).x-50, contours.at(0).at(0).y-50, 200, 100));
-				}
+			bitwise_and(frame, frame, drone, mask);
+			if (contours.empty());
+			else {
+				croppedImage = frame(Rect(contours.at(0).at(0).x - 50, contours.at(0).at(0).y - 50, 200, 100));
+				temp_contours = contours;
+			}
+			cout << contours.at(0).at(0).y << endl;
+			cout << "calosc: " << frame.size() << endl;
+			
+			
 			iter++;
 		}
 		else {
@@ -82,6 +89,7 @@ int main(int argc, char** argv)
 
 			findContours(mask, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_SIMPLE);
 			bitwise_and(croppedImage, croppedImage, drone, mask);
+			
 			if (contours.empty()) {
 				cvtColor(frame, hsv, COLOR_RGB2HSV);
 				inRange(hsv, Scalar(lowerB, lowerG, lowerR), Scalar(upperB, upperG, upperR), mask);
@@ -92,12 +100,28 @@ int main(int argc, char** argv)
 
 				findContours(mask, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_SIMPLE);
 				bitwise_and(frame, frame, drone, mask);
+				
 				if (contours.empty());
 				else {
-					croppedImage = frame(Rect(contours.at(0).at(0).x - 50, contours.at(0).at(0).y - 50, 200, 100));
+					croppedImage = frame(Rect(contours.at(0).at(0).x - 50, contours.at(0).at(0).y - 25, 200, 100));
+					temp_contours = contours;
+					cout << contours.at(0).at(0).x << endl;
+					if (!temp.empty())
+						temp.clear();
 				}
 			}
-				
+			else {
+				if (temp.empty())
+					temp = contours;
+				else {
+					temp_x = contours.at(0).at(0).x - temp.at(0).at(0).x;
+					temp_y = contours.at(0).at(0).y - temp.at(0).at(0).y;
+					croppedImage = frame(Rect(temp_contours.at(0).at(0).x + temp_x -50 , temp_contours.at(0).at(0).y + temp_y -25, 200, 100));
+					temp_contours.at(0).at(0).x = temp_contours.at(0).at(0).x + temp_x;
+					temp_contours.at(0).at(0).y = temp_contours.at(0).at(0).y + temp_y;
+				}
+			//	cout << "fragment: " << croppedImage.size() << endl;
+			}
 		}
 		if (contours.empty())
 		{
@@ -113,15 +137,18 @@ int main(int argc, char** argv)
 				circle(croppedImage, Point(contours.at(0).at(0).x + 5, contours.at(0).at(0).y + 5), 5, Scalar(circleR, circleG, circleB), 2);
 				circle(croppedImage, Point(contours.back().at(0).x + 5, contours.back().at(0).y + 5), 5, Scalar(circleR, circleG, circleB), 2);
 			}
-				//contours_temp = contours;
+			//contours_temp = contours;
 			//rectangle(frame, Point(contours[0][0].x - 120, contours[0][0].y - 40), Point(contours[0][0].x + 40, contours[0][0].y + 25), Scalar(150, 100, 50), 2);
 			//putText(frame, "DRONIK", Point(contours[0][0].x - 90, contours[0][0].y - 50), 1, 2, Scalar(150, 100, 50), 2);
 		}
 		//imshow("drone", drone);
 		//imshow("disp2", hsv);
 		//imshow("disp3", mask);
+		Mat edges;
+		Canny(drone, edges, 150, 200);
 		imshow("disp", croppedImage);
 		imshow("frame", frame);
+		imshow("map", edges);
 		contours.clear();
 		iter++;
 		char c = char(waitKey(1));
