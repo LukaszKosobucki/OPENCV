@@ -27,9 +27,21 @@ skalibrowane już macierze kamer by zapobiec błędnej kalibracji
 """
 import cv2
 img_size=(1920,1200)
-error,mtxx1,disst1,mtxx2,disst2,R,E,T,F=\
+error,mtxx1,disst1,mtxx2,disst2,R,T,E,F=\
     cv2.stereoCalibrate(objectpoints,imagepoints1,imagepoints2,cameramatrix1,dist1,cameramatrix2,dist2,img_size,flags=cv2.CALIB_FIX_INTRINSIC+cv2.CALIB_USE_INTRINSIC_GUESS+cv2.CALIB_FIX_K1+cv2.CALIB_FIX_K2+cv2.CALIB_FIX_K3+cv2.CALIB_FIX_K4+cv2.CALIB_FIX_K5,criteria=(cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 50, 1*10**(-300)))
+"""
 
+error - blad reprojekcji stereo kalibracji
+mtxx1 - macierz 1. wprowadzonej kamery
+disst1 - parametry dystorsji 1. wprowadzonej kamery
+mtxx2 - macierz 2. wprowadzonej kamery
+disst2 - parametry dystorsji 2. wprowadzonej kamery
+R - macierz rotacji kamery 2 względem kamery 1
+T - wektor translacji kamery 2 względem kamery 1
+F - macierz fundamentalna
+E - essential matrix
+
+"""
 with open(f"stereok2k3/error.pickle","wb") as file:
     pickle.dump(error,file)
 with open(f"stereok2k3/mtxx1.pickle","wb") as file:
