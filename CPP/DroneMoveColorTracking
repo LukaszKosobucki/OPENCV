@@ -19,7 +19,7 @@ string intToString(int number) {
 	ss << number;
 	return ss.str();
 }
-
+//---Funckja znajdujaca drona po kolorze pomaranczowym i ruchu---//
 Mat searchForOrangeMovement(Mat thresholdImage, Mat &cameraFeed, int lowerR, int lowerG, int lowerB, int upperR, int upperG, int upperB) {
 	bool objectDetected = false;
 	Mat temp;
@@ -104,7 +104,7 @@ Mat searchForOrangeMovement(Mat thresholdImage, Mat &cameraFeed, int lowerR, int
 	}
 	return mask;
 }
-
+//---Funkcja znajdujaca drona po kolorze bialym i ruchu (nie dopracowana)---//
 Mat searchForWhiteMovement(Mat thresholdImage, Mat &cameraFeed, int lowerRw, int lowerGw, int lowerBw, int upperRw, int upperGw, int upperBw) {
 	bool objectDetected = false;
 	Mat temp;
@@ -190,7 +190,7 @@ Mat searchForWhiteMovement(Mat thresholdImage, Mat &cameraFeed, int lowerRw, int
 	return mask;
 }
 
-
+//---Funkcja glowna---//
 int main()
 {
 	bool objectDetected = false;
@@ -234,6 +234,7 @@ int main()
 			getchar();
 			return -1;
 		}
+		//---Petla glowna---//
 		while (capture.get(CAP_PROP_POS_FRAMES) < capture.get(CAP_PROP_FRAME_COUNT) - 1)
 		{
 			capture.read(frame1);
@@ -259,13 +260,14 @@ int main()
 
 			blur(thresholdImage, thresholdImage, Size(BLUR_SIZE, BLUR_SIZE));
 			threshold(thresholdImage, thresholdImage, SESITIVITY_VALUE, 255, THRESH_BINARY);
-
+			//--przycisk 'd' do wyswietlenie ruchu drona---//
 			if (debugMode == true) {
 				imshow("Final threshold Image", thresholdImage);
 			}
 			else {
 				destroyWindow("Final threshold Image");
 			}
+			//---przycisk 't' do wlaczenia sledzenia---//
 			if (trackingEnabled)
 			{
 				mask = searchForOrangeMovement(thresholdImage, frame1,  lowerR,  lowerG,  lowerB,  upperR,  upperG, upperB);
